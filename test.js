@@ -6,19 +6,31 @@ import seek, { prettyPrint } from './seek.js';
 
 const require = createRequire(import.meta.url);
 
+const savedReport = require('./report.json');
+
 const CASES = [
     { map: 'map1.json', start: [ 8, 1 ] },
     { map: 'map1.json', start: [ 14, 0 ] },
+    { map: 'map1.json', start: [ 19, 10 ] },
+    { map: 'map1.json', start: [ 17, 14 ] },
+    { map: 'map1.json', start: [ 0, 0 ] },
+    { map: 'map1.json', start: [ 0, 22 ] },
+    { map: 'map1.json', start: [ 7, 7 ] },
+    { map: 'map1.json', start: [ 23, 21 ] },
 
     { map: 'map2.json', start: [ 3, 11 ] },
     { map: 'map2.json', start: [ 0, 8 ] },
+    { map: 'map2.json', start: [ 0, 21 ] },
     { map: 'map2.json', start: [ 11, 0 ] },
     { map: 'map2.json', start: [ 23, 0 ] },
+    { map: 'map2.json', start: [ 14, 17 ] },
 
     { map: 'map3.json', start: [ 9, 5 ] },
     { map: 'map3.json', start: [ 2, 8 ] },
     { map: 'map3.json', start: [ 1, 11 ] },
     { map: 'map3.json', start: [ 14, 21 ] },
+    { map: 'map3.json', start: [ 20, 6 ] },
+    { map: 'map3.json', start: [ 22, 20 ] },
     { map: 'map3.json', start: [ 5, 9 ] }
 ];
 
@@ -82,9 +94,30 @@ function check(map, point, steps) {
     }
 }
 
+const REPORT = {};
+
+function report(player, path, key) {
+    const rep = {
+        actions : player.__iter,
+        path    : path.length
+    };
+
+    REPORT[key] = rep;
+    const saved = savedReport[key];
+
+    if (!saved) {
+        return console.log('new');
+    }
+
+    const diffActions = saved.actions - rep.actions;
+    const diffPath = saved.path - rep.path;
+
+    console.log(`A ${diffActions} P: ${diffPath}`);
+}
+
 for (const test of CASES) {
     const map = require(`./${test.map}`);
-    const mapSize = `${test.map}: (${map.length }x${map[0].length}) [${test.start.join(',')}]`;
+    const mapSize = `${test.map}: [${test.start.join(',')}]`;
     const player = new TestPlayer(map, ...test.start);
 
     console.time(mapSize);
@@ -93,5 +126,25 @@ for (const test of CASES) {
     console.timeEnd(mapSize);
 
     check(map, test.start, path);
+    report(player, path, mapSize);
 }
 
+const total = { actions: 0, path: 0 };
+
+for (const v of Object.values(REPORT)) {
+    total.actions += v.actions;
+    total.path += v.path;
+}
+
+REPORT._total = total;
+const saved = savedReport._total;
+
+if (saved) {
+    console.log('TOTAL');
+    const diffActions = saved.actions - total.actions;
+    const diffPath = saved.path - total.path;
+
+    console.log(`A ${diffActions} P: ${diffPath}`);
+}
+
+console.log(JSON.stringify(REPORT));

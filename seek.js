@@ -8,7 +8,7 @@ function arraysEqual(arr1, arr2) {
     return arr1[0] === arr2[0] && arr1[1] === arr2[1];
 }
 
-const DIRECTIONS = [ [ 0, 1 ], [ 1, 0 ], [ 0, -1 ], [ -1, 0 ] ];
+const DIRECTIONS = [ [ 0, 1 ], [ 1, 0 ], [ -1, 0 ], [ 0, -1 ] ];
 const COMMANDS = {
     '0.1'  : 'down',
     '1.0'  : 'right',
@@ -32,7 +32,7 @@ function maxBorder(y, border) {
 function normalizePrice({ steps, horizon }) {
     if (horizon === 0) return Number.NEGATIVE_INFINITY;
 
-    return horizon - steps;
+    return 0.75 * horizon - steps;
 }
 
 function pathToCommands(path) {
@@ -76,6 +76,13 @@ export function prettyPrint(labyrinth) {
             return s;
         }).join(''));
     }
+}
+
+function getDirectionMultiplier(goal, pos) {
+    if (!goal) return 1;
+    const diff = Math.abs(goal[0] - pos[0]) + Math.abs(goal[1] - pos[1]);
+
+    return diff <= 10 ? 11 - diff : 1;
 }
 
 function lee(labyrinth, { isFirst, global }) {
@@ -216,13 +223,14 @@ function lee(labyrinth, { isFirst, global }) {
 
         for (let i = minBorder(x, borders.minX); i <=  maxBorder(x, borders.maxX); i++) {
             for (let j = minBorder(y, borders.minY); j <= maxBorder(y, borders.maxY); j++) {
-                if (cell(i, j) === -1) uncovered++;
+                const direction = getDirectionMultiplier(goalPos, [ i, j ]);
+
+                if (cell(i, j) === -1) uncovered = uncovered + direction;
             }
         }
 
         return uncovered;
     }
-
 
     while (queue.length > 0) {
         const [ x, y ] = queue.shift();
