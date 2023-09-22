@@ -28,6 +28,8 @@ const Adjustments = way.map(s => {
 const seeDistance = 2;
 const badMovePenalty = 2;
 const priceHorizonWeight = 2;
+const closeGoalMax = 22;
+const closeGoalStable = 10;
 
 function minBorder(y, border) {
     if (border === undefined) return y - seeDistance;
@@ -100,7 +102,7 @@ function getDirectionMultiplier(goal, pos) {
     if (!goal) return 1;
     const diff = squareDist(goal, pos);
 
-    return diff <= 10 ? 11 - diff : 1;
+    return diff <= closeGoalStable ? (diff * (1 - closeGoalMax) / closeGoalStable + closeGoalMax) : 1;
 }
 
 function lee(labyrinth, { isFirst, global }) {
@@ -266,11 +268,6 @@ function lee(labyrinth, { isFirst, global }) {
 
         if (global && arraysEqual([ x, y ], goalPos)) {
             const path = backTrace(playerPos, goalPos, parent);
-
-            // console.log('path:', path);
-            // prettyPrint(labyrinth);
-            // console.log({ playerPos, goalPos }, cell(...playerPos), cell(...goalPos));
-
             const { commands } = pathToCommands(path);
 
             return {
