@@ -8,13 +8,23 @@ function arraysEqual(arr1, arr2) {
     return arr1[0] === arr2[0] && arr1[1] === arr2[1];
 }
 
-const DIRECTIONS = [ [ 0, 1 ], [ 1, 0 ], [ -1, 0 ], [ 0, -1 ] ];
-const COMMANDS = {
-    '0.1'  : 'down',
-    '1.0'  : 'right',
-    '0.-1' : 'up',
-    '-1.0' : 'left'
-};
+const DIRECTIONS = [
+    { command: 'down', x: 0, y: 1 },
+    { command: 'right', x: 1, y: 0 },
+    { command: 'up', x: 0, y: -1 },
+    { command: 'left', x: -1, y: 0 }
+];
+
+// const way = [ 'down', 'up', 'left', 'right' ]; //1352
+// const way = [ 'up', 'down', 'right', 'left' ]; // 1323
+const way = [ 'up', 'down', 'left', 'right' ]; // 1250
+
+const Adjustments = way.map(s => {
+    const d = DIRECTIONS.find(dd => dd.command === s);
+
+    return [ d.x, d.y ];
+});
+
 const seeDistance = 2;
 
 function minBorder(y, border) {
@@ -46,7 +56,9 @@ function pathToCommands(path) {
         offset.x += dx;
         offset.y += dy;
 
-        commands.push(COMMANDS[`${dx}.${dy}`]);
+        const command = DIRECTIONS.find(d => d.x === dx && d.y === dy);
+
+        commands.push(command.command);
     }
 
     return { commands, offset };
@@ -105,7 +117,7 @@ function lee(labyrinth, { isFirst, global }) {
     function getAdjacentCells(x, y) {
         const adjacentCells = [];
 
-        for (const [ dx, dy ] of DIRECTIONS) {
+        for (const [ dx, dy ] of Adjustments) {
             const newX = x + dx;
             const newY = y + dy;
 
