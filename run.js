@@ -5,9 +5,9 @@ import Player from './PlayerTest.js';
 import seek, { prettyPrint } from './seek.js';
 
 const require = createRequire(import.meta.url);
-const map = require('./map2.json');
+const map = require('./map1.json');
 
-const start = [ 24, 0 ];
+const start = [ 19, 10 ];
 const player = new Player(map, ...start);
 
 prettyPrint(map);

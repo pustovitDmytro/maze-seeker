@@ -24,6 +24,7 @@ const CASES = [
     { map: 'map2.json', start: [ 11, 0 ] },
     { map: 'map2.json', start: [ 23, 0 ] },
     { map: 'map2.json', start: [ 14, 17 ] },
+    { map: 'map2.json', start: [ 1, 5 ] },
 
     { map: 'map3.json', start: [ 9, 5 ] },
     { map: 'map3.json', start: [ 2, 8 ] },

@@ -30,9 +30,9 @@ function maxBorder(y, border) {
 }
 
 function normalizePrice({ steps, horizon }) {
-    if (horizon === 0) return Number.NEGATIVE_INFINITY;
+    if (horizon <= 0) return Number.NEGATIVE_INFINITY;
 
-    return 0.75 * horizon - steps;
+    return 2 * horizon - steps;
 }
 
 function pathToCommands(path) {
@@ -78,9 +78,13 @@ export function prettyPrint(labyrinth) {
     }
 }
 
+function squareDist(point1, point2) {
+    return Math.abs(point1[0] - point2[0]) + Math.abs(point1[1] - point2[1]);
+}
+
 function getDirectionMultiplier(goal, pos) {
     if (!goal) return 1;
-    const diff = Math.abs(goal[0] - pos[0]) + Math.abs(goal[1] - pos[1]);
+    const diff = squareDist(goal, pos);
 
     return diff <= 10 ? 11 - diff : 1;
 }
@@ -219,15 +223,26 @@ function lee(labyrinth, { isFirst, global }) {
     const prices = { [playerPos.join('.')]: { steps: 0, horizon: 0, price: Number.NEGATIVE_INFINITY } };
 
     function horizonCover([ x, y ]) {
+        const badMovePenalty = 0;
+
         let uncovered = 0;
+
+        let canMakeNewEnhancedMove = false;
 
         for (let i = minBorder(x, borders.minX); i <=  maxBorder(x, borders.maxX); i++) {
             for (let j = minBorder(y, borders.minY); j <= maxBorder(y, borders.maxY); j++) {
                 const direction = getDirectionMultiplier(goalPos, [ i, j ]);
+                const val = cell(i, j);
+                const dist = squareDist([ x, y ], [ i, j ]);
 
-                if (cell(i, j) === -1) uncovered = uncovered + direction;
+                if (val === -1) uncovered = uncovered + direction;
+                if (dist === 1 && val === -1) {
+                    canMakeNewEnhancedMove = true;
+                }
             }
         }
+
+        if (!canMakeNewEnhancedMove) uncovered = uncovered - badMovePenalty;
 
         return uncovered;
     }
@@ -386,6 +401,7 @@ export default function seek(player) {
         iteration++;
         // prettyPrint(LABYRINTH);
         // console.log('iteration:', iteration);
+        // if (iteration === 200) break;
     }
 }
 
