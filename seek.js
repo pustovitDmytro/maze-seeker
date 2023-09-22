@@ -29,6 +29,8 @@ const Adjustments = way.map(s => {
 const seeDistance = 2;
 const badMovePenalty = 2;
 const priceHorizonWeight = 2;
+const closeGoalMax = 11;
+const closeGoalStable = 10;
 
 function minBorder(y, border) {
     if (border === undefined) return y - seeDistance;
@@ -101,7 +103,7 @@ function getDirectionMultiplier(goal, pos) {
     if (!goal) return 1;
     const diff = squareDist(goal, pos);
 
-    return diff <= 10 ? 11 - diff : 1;
+    return diff <= closeGoalStable ? (diff * (1 - closeGoalMax) / closeGoalStable + closeGoalMax) : 1;
 }
 
 function lee(labyrinth, { isFirst, global }) {
@@ -319,9 +321,7 @@ function lee(labyrinth, { isFirst, global }) {
     }
 
     if (localGoal.price === Number.NEGATIVE_INFINITY) {
-        return {
-            noGoal : true
-        };
+        return { noGoal: true };
     }
 
     const path = backTrace(playerPos, localGoal.hash.split('.'), parent);
@@ -360,18 +360,11 @@ function stich(whole, piece, offset, oldPlayer) {
     ];
     const relCenter = [ 2, 2 ];
 
-    // console.log('-----------');
-    // prettyPrint(whole);
-    // console.log(fragmentCenter, offset, oldPlayer);
-    // prettyPrint(piece);
-
     const xmin = Math.min(0, fragmentCenter[0] - seeDistance);
     const xmax = Math.max(whole[0].length - 1, fragmentCenter[0] + seeDistance);
     const ymin = Math.min(0, fragmentCenter[1] - seeDistance);
     const ymax = Math.max(whole.length - 1, fragmentCenter[1] + seeDistance);
 
-    // console.log(whole[0].length, fragmentCenter[0] + seeDistance);
-    // console.log({ xmin, xmax, ymin, ymax });
     for (let j = ymin; j <= ymax; j++) {
         const line = [];
 
@@ -384,8 +377,6 @@ function stich(whole, piece, offset, oldPlayer) {
 
         res.push(line);
     }
-
-    // prettyPrint(res);
 
     return res;
 }
@@ -403,9 +394,6 @@ export default function seek(player) {
         }
 
         if (goal) {
-            // console.log('FINISHED');
-            // console.log('steps:', steps);
-
             return steps.map(s => s.toUpperCase());
         }
 
@@ -419,7 +407,7 @@ export default function seek(player) {
         iteration++;
         // prettyPrint(LABYRINTH);
         // console.log('iteration:', iteration);
-        // if (iteration === 200) break;
+        // if (iteration === 50) break;
     }
 }
 
