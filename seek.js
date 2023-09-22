@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 /* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable no-param-reassign */
 /* eslint-disable max-lines-per-function */
@@ -135,57 +136,60 @@ function lee(labyrinth, { isFirst, global }) {
 
     function getBorders() {
         const borders = {};
-        const BORDER_LOOKUP_DEPTHS = 1;
+        const BORDER_LOOKUP_DEPTHS = 3;
 
-        for (let y = BORDER_LOOKUP_DEPTHS; y >= 0; y--) {
+        for (let y = 0; y < BORDER_LOOKUP_DEPTHS; y++) {
             let accum = 0;
 
             for (let x = 0; x < labyrinth[y].length; x++) {
                 if (cell(x, y) === null) accum++;
             }
 
-            if (accum >= 5) {
+            if (y === 0 && accum < 5) break;
+
+            if (accum >= 5 && (!borders.minY || y > borders.minY)) {
                 borders.minY = y;
-                break;
             }
         }
 
-        for (let y = labyrinth.length - BORDER_LOOKUP_DEPTHS; y < labyrinth.length; y++) {
+        for (let y = labyrinth.length - 1; y > labyrinth.length - BORDER_LOOKUP_DEPTHS.length; y--) {
             let accum = 0;
 
             for (let x = 0; x < labyrinth[y].length; x++) {
                 if (cell(x, y) === null) accum++;
             }
 
-            if (accum >= 5) {
+            if (y === labyrinth.length - 1 && accum < 5) break;
+
+            if (accum >= 5 && (!borders.maxY || y < borders.maxY)) {
                 borders.maxY = y;
-                break;
             }
         }
 
-        for (let x = BORDER_LOOKUP_DEPTHS; x >= 0; x--) {
+        for (let x = 0; x < BORDER_LOOKUP_DEPTHS; x++) {
             let accum = 0;
 
             for (let y = 0; y < labyrinth.length; y++) {
                 if (cell(x, y) === null) accum++;
             }
 
-            if (accum >= 5) {
+            if (x === 0 && accum < 5) break;
+            if (accum >= 5 && (!borders.minX || x > borders.minX)) {
                 borders.minX = x;
-                break;
             }
         }
 
-        for (let x = labyrinth[0].length - BORDER_LOOKUP_DEPTHS; x < labyrinth[0].length; x++) {
+        for (let x = labyrinth[0].length - 1;  x > labyrinth[0].length - BORDER_LOOKUP_DEPTHS; x--) {
             let accum = 0;
 
             for (let y = 0; y < labyrinth.length; y++) {
                 if (cell(x, y) === null) accum++;
             }
 
-            if (accum >= 5) {
+            if (x === labyrinth[0].length - 1 && accum < 5) break;
+
+            if (accum >= 5 && (!borders.maxX || x < borders.maxX)) {
                 borders.maxX = x;
-                break;
             }
         }
 
@@ -195,6 +199,7 @@ function lee(labyrinth, { isFirst, global }) {
 
     const borders = getBorders();
 
+    // prettyPrint(labyrinth);
     // console.log('borders:', borders);
 
     let goalPos = null;
