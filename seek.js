@@ -26,6 +26,8 @@ const Adjustments = way.map(s => {
 });
 
 const seeDistance = 2;
+const badMovePenalty = 2;
+const priceHorizonWeight = 2;
 
 function minBorder(y, border) {
     if (border === undefined) return y - seeDistance;
@@ -42,7 +44,7 @@ function maxBorder(y, border) {
 function normalizePrice({ steps, horizon }) {
     if (horizon <= 0) return Number.NEGATIVE_INFINITY;
 
-    return 2 * horizon - steps;
+    return priceHorizonWeight * horizon - steps;
 }
 
 function pathToCommands(path) {
@@ -235,8 +237,6 @@ function lee(labyrinth, { isFirst, global }) {
     const prices = { [playerPos.join('.')]: { steps: 0, horizon: 0, price: Number.NEGATIVE_INFINITY } };
 
     function horizonCover([ x, y ]) {
-        const badMovePenalty = 0;
-
         let uncovered = 0;
 
         let canMakeNewEnhancedMove = false;
@@ -254,9 +254,10 @@ function lee(labyrinth, { isFirst, global }) {
             }
         }
 
-        if (!canMakeNewEnhancedMove) uncovered = uncovered - badMovePenalty;
+        if (uncovered === 0) return uncovered;
+        if (canMakeNewEnhancedMove) return uncovered;
 
-        return uncovered;
+        return Math.max(0.1, uncovered - badMovePenalty);
     }
 
     while (queue.length > 0) {
