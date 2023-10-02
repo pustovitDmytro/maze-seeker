@@ -102,7 +102,7 @@ function getDirectionMultiplier(goal, pos) {
     if (!goal) return 1;
     const diff = squareDist(goal, pos);
 
-    return diff <= closeGoalStable ? (diff * (1 - closeGoalMax) / closeGoalStable + closeGoalMax) : 1;
+    return (diff <= closeGoalStable) ? (diff * (1 - closeGoalMax) / closeGoalStable + closeGoalMax) : 1;
 }
 
 function lee(labyrinth, { isFirst, global }) {
@@ -112,6 +112,19 @@ function lee(labyrinth, { isFirst, global }) {
         if (labyrinth[y][x] === undefined) return -1;
 
         return labyrinth[y][x];
+    }
+
+
+    function fillXBorder(border) {
+        for (const row of labyrinth) {
+            if (row[border] === -1) row[border] = null;
+        }
+    }
+
+    function fillYBorder(border) {
+        for (let x = 0; x < labyrinth[border].length; x++) {
+            if (labyrinth[border][x] === -1) labyrinth[border][x] = null;
+        }
     }
 
     function isValidMove(x, y) {
@@ -148,6 +161,7 @@ function lee(labyrinth, { isFirst, global }) {
 
             if (accum >= 5) {
                 borders.minY = y;
+                fillYBorder(borders.minY);
                 break;
             }
         }
@@ -161,6 +175,7 @@ function lee(labyrinth, { isFirst, global }) {
 
             if (accum >= 5) {
                 borders.maxY = y;
+                fillYBorder(borders.maxY);
                 break;
             }
         }
@@ -174,6 +189,7 @@ function lee(labyrinth, { isFirst, global }) {
 
             if (accum >= 5) {
                 borders.minX = x;
+                fillXBorder(borders.minX);
                 break;
             }
         }
@@ -187,6 +203,7 @@ function lee(labyrinth, { isFirst, global }) {
 
             if (accum >= 5) {
                 borders.maxX = x;
+                fillXBorder(borders.maxX);
                 break;
             }
         }
@@ -246,6 +263,11 @@ function lee(labyrinth, { isFirst, global }) {
         for (let i = minBorder(x, borders.minX); i <=  maxBorder(x, borders.maxX); i++) {
             for (let j = minBorder(y, borders.minY); j <= maxBorder(y, borders.maxY); j++) {
                 const direction = getDirectionMultiplier(goalPos, [ i, j ]);
+
+                // if (j === borders.minY + 1 || j === borders.maxY - 1 || i === borders.minX + 1 || i === borders.maxX - 1) {
+                //     direction = direction / 2;
+                // }
+
                 const val = cell(i, j);
                 const dist = squareDist([ x, y ], [ i, j ]);
 
