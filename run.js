@@ -7,10 +7,10 @@ import seek, { prettyPrint } from './seek.js';
 const require = createRequire(import.meta.url);
 const map = require('./map1.json');
 
-const start = [ 19, 10 ];
+const start = [ -1, 0 ];
 const player = new Player(map, ...start);
 
-prettyPrint(map);
+// prettyPrint(map);
 const mapSize = `${map.length }x${map[0].length} size`;
 
 prettyPrint(player.lookAround());

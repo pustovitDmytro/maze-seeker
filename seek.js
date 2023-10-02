@@ -28,7 +28,7 @@ const Adjustments = way.map(s => {
 
 const seeDistance = 2;
 const badMovePenalty = 2;
-const priceHorizonWeight = 2;
+const priceHorizonWeight = 0.8;
 const closeGoalMax = 11;
 const closeGoalStable = 10;
 
@@ -106,6 +106,7 @@ function getDirectionMultiplier(goal, pos) {
     return diff <= closeGoalStable ? (diff * (1 - closeGoalMax) / closeGoalStable + closeGoalMax) : 1;
 }
 
+
 function lee(labyrinth, { isFirst, global }) {
     // prettyPrint(labyrinth);
     function cell(x, y) {
@@ -113,6 +114,18 @@ function lee(labyrinth, { isFirst, global }) {
         if (labyrinth[y][x] === undefined) return -1;
 
         return labyrinth[y][x];
+    }
+
+    function fillXBorder(border) {
+        for (const row of labyrinth) {
+            if (row[border] === -1) row[border] = null;
+        }
+    }
+
+    function fillYBorder(border) {
+        for (let x = 0; x < labyrinth[border].length; x++) {
+            if (labyrinth[border][x] === -1) labyrinth[border][x] = null;
+        }
     }
 
     function isValidMove(x, y) {
@@ -144,13 +157,14 @@ function lee(labyrinth, { isFirst, global }) {
             let accum = 0;
 
             for (let x = 0; x < labyrinth[y].length; x++) {
-                if (cell(x, y) === null) accum++;
+                if ([ 'R', null ].includes(cell(x, y))) accum++;
             }
 
             if (y === 0 && accum < 5) break;
 
             if (accum >= 5 && (!borders.minY || y > borders.minY)) {
                 borders.minY = y;
+                fillYBorder(borders.minY);
             }
         }
 
@@ -158,13 +172,14 @@ function lee(labyrinth, { isFirst, global }) {
             let accum = 0;
 
             for (let x = 0; x < labyrinth[y].length; x++) {
-                if (cell(x, y) === null) accum++;
+                if (([ 'R', null ].includes(cell(x, y)))) accum++;
             }
 
             if (y === labyrinth.length - 1 && accum < 5) break;
 
             if (accum >= 5 && (!borders.maxY || y < borders.maxY)) {
                 borders.maxY = y;
+                fillYBorder(borders.maxY);
             }
         }
 
@@ -172,12 +187,13 @@ function lee(labyrinth, { isFirst, global }) {
             let accum = 0;
 
             for (let y = 0; y < labyrinth.length; y++) {
-                if (cell(x, y) === null) accum++;
+                if (([ 'R', null ].includes(cell(x, y)))) accum++;
             }
 
             if (x === 0 && accum < 5) break;
             if (accum >= 5 && (!borders.minX || x > borders.minX)) {
                 borders.minX = x;
+                fillXBorder(borders.minX);
             }
         }
 
@@ -185,24 +201,32 @@ function lee(labyrinth, { isFirst, global }) {
             let accum = 0;
 
             for (let y = 0; y < labyrinth.length; y++) {
-                if (cell(x, y) === null) accum++;
+                if (([ 'R', null ].includes(cell(x, y)))) accum++;
             }
 
             if (x === labyrinth[0].length - 1 && accum < 5) break;
 
             if (accum >= 5 && (!borders.maxX || x < borders.maxX)) {
                 borders.maxX = x;
+                fillXBorder(borders.maxX);
             }
         }
 
+        if (borders.maxX && !borders.maxY) {
+            borders.maxY = borders.maxX;
+        }
+
+        if (borders.maxY && !borders.maxX) {
+            borders.maxX = borders.maxY;
+        }
 
         return borders;
     }
 
     const borders = getBorders();
 
-    // prettyPrint(labyrinth);
     // console.log('borders:', borders);
+    // prettyPrint(labyrinth);
 
     let goalPos = null;
 
